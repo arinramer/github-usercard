@@ -11,7 +11,9 @@ axios.get('https://api.github.com/users/arinramer')
   const bio = response.data.bio;
   const url = response.data.html_url;
   const location = response.data.location;
-  const newProfile = createProfile(avatar, name, bio, url, username, location);
+  const followers = response.data.followers;
+  const following = response.data.following;
+  const newProfile = createProfile(avatar, name, bio, url, username, location, followers, following);
   cards.appendChild(newProfile);
 })
 .catch( err => {
@@ -29,13 +31,14 @@ axios.get('https://api.github.com/users/arinramer')
            create a new component and add it to the DOM as a child of .cards
 */
 const cards = document.querySelector('.cards')
-function createProfile(avatar, name, bio, url, username, location) {
+function createProfile(avatar, name, bio, url, username, location, followers, following) {
   const card = document.createElement('div');
   card.classList.add('card')
   card.style.flexDirection = 'column';
   //picture
   const profileImg = document.createElement('img');
   profileImg.src = avatar;
+  profileImg.classList.add('profile');
   card.appendChild(profileImg);
   //cardinfo
   const cardInfo = document.createElement('div');
@@ -51,6 +54,17 @@ function createProfile(avatar, name, bio, url, username, location) {
   myUserName.classList.add('username')
   myUserName.textContent = username;
   cardInfo.appendChild(myUserName);
+  const expand = document.createElement('button');
+      expand.textContent = "Show more";
+      expand.addEventListener("click", () => {
+        card.classList.toggle('open');
+        if (card.classList.contains('open')) {
+          expand.textContent = "Show less";
+        } else {
+          expand.textContent = "Show more";
+        }
+      })
+      cardInfo.appendChild(expand);
   //bio
   const newBio = document.createElement('p');
   newBio.textContent = bio;
@@ -60,10 +74,29 @@ function createProfile(avatar, name, bio, url, username, location) {
   newLocation.textContent = location;
   cardInfo.appendChild(newLocation);
   //url
+  const label = document.createElement('p');
+  cardInfo.appendChild(label);
+  label.textContent = 'Profile: ';
   const newUrl = document.createElement('a');
   newUrl.setAttribute('href', url)
-  newUrl.textContent = url;
+  newUrl.textContent = 'Profle: ' + url;
   cardInfo.appendChild(newUrl);
+  //followers
+  const label2 = document.createElement('p');
+  cardInfo.appendChild(label2);
+  const numOfFollowers = document.createElement('a');
+  label2.textContent = 'Followers: ' + followers;
+  cardInfo.appendChild(numOfFollowers);
+  //following
+  const label3 = document.createElement('p');
+  cardInfo.appendChild(label3);
+  const numOfFollowing = document.createElement('a');
+  label3.textContent = 'Following: ' + following;
+  cardInfo.appendChild(numOfFollowing);
+  const contributions = document.createElement('img');
+  contributions.src = `http://ghchart.rshah.org/arinramer`;
+  contributions.classList.add('contributions')
+  card.appendChild(contributions);
   return card;
 }
 
@@ -112,68 +145,101 @@ function combine(url, name) {
   return url + name;
 }
 
+function profileCreator(obj) {
+  const card = document.createElement('div');
+  card.classList.add('card')
+  card.style.flexDirection = 'column';
+  //picture
+  const profileImg = document.createElement('img');
+  profileImg.src = obj.avatar_url;
+  profileImg.classList.add('profile');
+  card.appendChild(profileImg);
+  //cardinfo
+  const cardInfo = document.createElement('div');
+  cardInfo.classList.add('card-info');
+  card.appendChild(cardInfo);
+  //name
+  const newName = document.createElement('h3');
+  newName.classList.add('name');
+  newName.textContent = obj.name;
+  cardInfo.appendChild(newName);
+  //username
+  const userName = document.createElement('p');
+  userName.classList.add('username')
+  userName.textContent = obj.login;
+  cardInfo.appendChild(userName);
+  const expand = document.createElement('button');
+  expand.textContent = "Show more";
+  expand.addEventListener("click", () => {
+    card.classList.toggle('open');
+    if (card.classList.contains('open')) {
+      expand.textContent = "Show less";
+    } else {
+      expand.textContent = "Show more";
+    }
+  })
+  cardInfo.appendChild(expand);
+  //location
+  const newLocation = document.createElement('p');
+  newLocation.textContent = obj.location;
+  cardInfo.appendChild(newLocation);
+  //profile
+  const label = document.createElement('p');
+  cardInfo.appendChild(label);
+  const profile = document.createElement('a');
+  label.textContent = 'Profile: ' + profile;
+  profile.setAttribute('href', obj.html_url);
+  profile.textContent = obj.html_url;
+  cardInfo.appendChild(profile);
+  //followers
+  const label2 = document.createElement('p');
+  cardInfo.appendChild(label2);
+  const numOfFollowers = document.createElement('a');
+  label2.textContent = 'Followers: ' + obj.followers;
+  cardInfo.appendChild(numOfFollowers);
+  //following
+  const label3 = document.createElement('p');
+  cardInfo.appendChild(label3);
+  const numOfFollowing = document.createElement('a');
+  label3.textContent = 'Following: ' + obj.following;
+  cardInfo.appendChild(numOfFollowing);
+  //bio
+  const newBio = document.createElement('p');
+  newBio.textContent = obj.bio;
+  cardInfo.appendChild(newBio);
+  const contributions = document.createElement('img');
+  contributions.src = `http://ghchart.rshah.org/${obj.login}`;
+  contributions.classList.add('contributions')
+  card.appendChild(contributions);
+  return card;
+}
+
 loop.forEach((e) => {
   axios.get(combine("https://api.github.com/users/", e))
   .then( response => {
     const data = response.data;
     const newProfile = profileCreator(data);
     cards.appendChild(newProfile);
-    function profileCreator(obj) {
-      const card = document.createElement('div');
-      card.classList.add('card')
-      card.style.flexDirection = 'column';
-      //picture
-      const profileImg = document.createElement('img');
-      profileImg.src = obj.avatar_url;
-      card.appendChild(profileImg);
-      //cardinfo
-      const cardInfo = document.createElement('div');
-      cardInfo.classList.add('card-info');
-      card.appendChild(cardInfo);
-      //name
-      const newName = document.createElement('h3');
-      newName.classList.add('name');
-      newName.textContent = obj.name;
-      cardInfo.appendChild(newName);
-      //username
-      const userName = document.createElement('p');
-      userName.classList.add('username')
-      userName.textContent = obj.login;
-      cardInfo.appendChild(userName);
-      //location
-      const newLocation = document.createElement('p');
-      newLocation.textContent = obj.location;
-      cardInfo.appendChild(newLocation);
-      //profile
-      const label = document.createElement('p');
-      cardInfo.appendChild(label);
-      const profile = document.createElement('a');
-      label.textContent = 'Profile: ' + profile;
-      profile.setAttribute('href', obj.html_url);
-      profile.textContent = obj.html_url;
-      cardInfo.appendChild(profile);
-      //followers
-      const label2 = document.createElement('p');
-      cardInfo.appendChild(label2);
-      const numOfFollowers = document.createElement('a');
-      label2.textContent = 'Followers: ' + obj.followers;
-      cardInfo.appendChild(numOfFollowers);
-      //followers
-      const label3 = document.createElement('p');
-      cardInfo.appendChild(label3);
-      const numOfFollowing = document.createElement('a');
-      label3.textContent = 'Following: ' + obj.following;
-      cardInfo.appendChild(numOfFollowing);
-      //bio
-      const newBio = document.createElement('p');
-      newBio.textContent = obj.bio;
-      cardInfo.appendChild(newBio);
-      return card;
-    }
   })
 })
 
-
+const myForm = document.createElement('input');
+myForm.setAttribute('placeholder', 'Enter Github username')
+myForm.style.margin = "20px";
+myForm.style.padding = "5px";
+cards.appendChild(myForm);
+const submit = document.createElement('button');
+submit.textContent = "Submit";
+cards.appendChild(submit);
+submit.addEventListener("click", () => {
+  const name = document.querySelector('input').value;
+  axios.get(combine("https://api.github.com/users/", name))
+  .then( response => {
+    const data = response.data;
+    const newProfile = profileCreator(data);
+    cards.appendChild(newProfile);
+  })
+})
 
 
 
